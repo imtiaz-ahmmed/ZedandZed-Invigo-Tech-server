@@ -28,14 +28,23 @@ const checkMongoDBConnection = (req, res, next) => {
 };
 
 app.use(checkMongoDBConnection);
+const usersCollection = client
+  .db("ZedandZed-Invigo-Tech-DB")
+  .collection("user");
+//GET METHOD API's
+
+//User API -- GET
+app.get("/users", async (req, res) => {
+  const cursor = usersCollection.find();
+  const result = await cursor.toArray();
+  res.send(result);
+});
 
 // POST METHOD API's
 // User API -- POST
 app.post("/users", async (req, res) => {
   const user = req.body;
-  const usersCollection = client
-    .db("ZedandZed-Invigo-Tech-DB")
-    .collection("user");
+
   const query = { email: user.email };
 
   try {
