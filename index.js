@@ -19,25 +19,62 @@ const client = new MongoClient(uri, {
   },
 });
 
-async function run() {
+// Middleware to check MongoDB connection
+const checkMongoDBConnection = (req, res, next) => {
+  if (!client.topology.isConnected()) {
+    return res.status(500).send({ error: "MongoDB client is not connected." });
+  }
+  next();
+};
+
+app.use(checkMongoDBConnection);
+
+// POST METHOD API's
+// User API -- POST
+app.post("/users", async (req, res) => {
+  const user = req.body;
+  const usersCollection = client
+    .db("ZedandZed-Invigo-Tech-DB")
+    .collection("user");
+  const query = { email: user.email };
+
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    const existingUser = await usersCollection.findOne(query);
+
+    if (existingUser) {
+      return res.send({ message: "user already exists" });
+    }
+
+    const result = await usersCollection.insertOne(user);
+    res.send(result);
+  } catch (error) {
+    console.error("Error in /users endpoint:", error);
+    res.status(500).send({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/", (req, res) => {
+  res.send("ZedandZed-Invigo-Tech is running");
+});
+
+async function startServer() {
+  try {
+    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+
+    // Start the server
+    app.listen(port, () => {
+      console.log(`ZedandZed-Invigo-Tech is running on ${port}`);
+    });
+  } catch (error) {
+    console.error("Error during MongoDB connection:", error);
   }
 }
-run().catch(console.dir);
 
-app.get("/", (req, res) => {
-  res.send("ZedandZed-Invigo-Tech is running");
-});
-app.listen(port, () => {
-  console.log(`ZedandZed-Invigo-Tech is running on ${port}`);
-});
+startServer();
