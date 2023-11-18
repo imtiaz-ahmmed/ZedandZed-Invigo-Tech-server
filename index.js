@@ -42,6 +42,11 @@ app.get("/users", async (req, res) => {
   const result = await cursor.toArray();
   res.send(result);
 });
+app.get("/inventory", async (req, res) => {
+  const cursor = inventoryCollection.find();
+  const result = await cursor.toArray();
+  res.send(result);
+});
 
 // POST METHOD API's
 // User API -- POST
