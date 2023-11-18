@@ -31,6 +31,9 @@ app.use(checkMongoDBConnection);
 const usersCollection = client
   .db("ZedandZed-Invigo-Tech-DB")
   .collection("user");
+const inventoryCollection = client
+  .db("ZedandZed-Invigo-Tech-DB")
+  .collection("inventory");
 //GET METHOD API's
 
 //User API -- GET
@@ -44,7 +47,6 @@ app.get("/users", async (req, res) => {
 // User API -- POST
 app.post("/users", async (req, res) => {
   const user = req.body;
-
   const query = { email: user.email };
 
   try {
@@ -60,6 +62,11 @@ app.post("/users", async (req, res) => {
     console.error("Error in /users endpoint:", error);
     res.status(500).send({ error: "Internal Server Error" });
   }
+});
+app.post("/add-inventory", async (req, res) => {
+  const inventory = req.body;
+  const result = await inventoryCollection.insertOne(inventory);
+  res.send(result);
 });
 
 app.get("/", (req, res) => {
