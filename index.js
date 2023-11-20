@@ -5,7 +5,7 @@ const port = process.env.PORT || 5000;
 require("dotenv").config();
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4gu2b8y.mongodb.net/?retryWrites=true&w=majority`;
