@@ -7,7 +7,7 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4gu2b8y.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -42,6 +42,7 @@ app.get("/users", async (req, res) => {
   const result = await cursor.toArray();
   res.send(result);
 });
+//Inventory API -- GET
 app.get("/inventory", async (req, res) => {
   const cursor = inventoryCollection.find();
   const result = await cursor.toArray();
@@ -49,6 +50,7 @@ app.get("/inventory", async (req, res) => {
 });
 
 // POST METHOD API's
+
 // User API -- POST
 app.post("/users", async (req, res) => {
   const user = req.body;
@@ -68,10 +70,35 @@ app.post("/users", async (req, res) => {
     res.status(500).send({ error: "Internal Server Error" });
   }
 });
+
+//Inventory API --POST
 app.post("/add-inventory", async (req, res) => {
   const inventory = req.body;
   const result = await inventoryCollection.insertOne(inventory);
   res.send(result);
+});
+
+//DELETE API's
+
+// inventory API -- DELETE
+
+app.delete("/inventory/:id", async (req, res) => {
+  const inventoryId = req.params.id;
+
+  try {
+    const query = { _id: new ObjectId(inventoryId) };
+
+    const result = await inventoryCollection.deleteOne(query);
+
+    if (result.deletedCount === 0) {
+      return res.status(404).send({ error: "Inventory not found" });
+    }
+
+    res.send({ message: "Inventory deleted successfully" });
+  } catch (error) {
+    console.error("Error in /inventory/:id DELETE endpoint:", error);
+    res.status(500).send({ error: "Internal Server Error" });
+  }
 });
 
 app.get("/", (req, res) => {
