@@ -78,6 +78,39 @@ app.post("/add-inventory", async (req, res) => {
   res.send(result);
 });
 
+//PUT API's
+
+//Inventory API -- Put
+app.put("/inventory/:id", async (req, res) => {
+  const inventoryId = req.params.id;
+
+  // Check if inventoryId is a valid ObjectId
+  if (!ObjectId.isValid(inventoryId)) {
+    return res.status(400).send({ error: "Invalid inventoryId" });
+  }
+
+  const updatedData = req.body;
+
+  try {
+    const query = { _id: new ObjectId(inventoryId) };
+    const update = { $set: { ...updatedData } };
+
+    // Exclude _id from the update to avoid the immutable field error
+    delete update.$set._id;
+
+    const result = await inventoryCollection.updateOne(query, update);
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({ error: "Inventory not found" });
+    }
+
+    res.send({ message: "Inventory updated successfully" });
+  } catch (error) {
+    console.error("Error in /inventory/:id PUT endpoint:", error);
+    res.status(500).send({ error: "Internal Server Error" });
+  }
+});
+
 //DELETE API's
 
 // inventory API -- DELETE
